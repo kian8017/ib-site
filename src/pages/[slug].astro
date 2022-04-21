@@ -1,0 +1,40 @@
+---
+import slugify from 'slugify';
+import Layout from '../components/Layout.astro';
+
+interface Page {
+    id: number;
+    status: string;
+    date_created: string;
+    date_updated: string;
+    Title: string;
+    Description: string;
+    Contents: string;
+}
+
+
+export async function getStaticPaths() {
+    const FULL_URL = import.meta.env.API_URL + "?access_token=" + import.meta.env.ACCESS_TOKEN;
+    const res = await fetch(FULL_URL).then((r) => r.json());
+    const pages = res.data as Page[]
+    const ret = pages.map((p) => {
+        const slug = slugify(p.Title, {
+            lower: true,
+        })
+        return {
+            params: {slug: slug},
+            props: p,
+        };
+    })
+    return ret;
+}
+
+const page = Astro.props as Page;
+---
+
+<Layout title={page.Title} description={page.Description}>
+    <h1>{page.Title}</h1>
+    <p><em>{page.Description}</em></p>
+    <hr />
+   <div class="content_root" set:html={page.Contents} />
+</Layout>
